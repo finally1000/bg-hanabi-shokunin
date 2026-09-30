@@ -239,11 +239,17 @@
     }
 
     .stage-card.fullscreen-mode .canvas-wrapper {
-      max-width: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      width: auto !important;
-      height: auto !important;
+      background: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: visible !important;
+    }
+
+    .stage-card.fullscreen-mode #matrixCanvas {
+      display: block !important;
     }
 
     /* Reference Ruler Widget */
@@ -702,6 +708,12 @@
         <button id="hudRulerBtn" class="btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 999px;">
           <span>📏 3cm 校準尺</span>
         </button>
+        <!-- Fullscreen Direct Calibration -->
+        <div style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 999px;">
+          <button id="hudScaleMinus" class="btn" style="padding: 2px 8px; font-size: 0.85rem; border-radius: 999px; min-width: 26px; border: none; background: rgba(255,255,255,0.12);" title="縮小實體尺寸">－</button>
+          <span id="hudScaleText" style="font-family: monospace; font-size: 0.78rem; font-weight: 600; color: var(--accent-yellow); min-width: 95px; text-align: center;">100% (3.00cm)</span>
+          <button id="hudScalePlus" class="btn" style="padding: 2px 8px; font-size: 0.85rem; border-radius: 999px; min-width: 26px; border: none; background: rgba(255,255,255,0.12);" title="放大實體尺寸">＋</button>
+        </div>
       </div>
 
       <!-- 3cm Calibration Ruler Overlay -->
@@ -1254,26 +1266,48 @@
 
     function applyCanvasScale() {
       if (isFullscreen) {
-        const vh = window.innerHeight;
-        const vw = window.innerWidth;
-        // 以短邊 1:1 基準，乘上校準比率 scaleRatio
-        const baseSize = Math.min(vw, vh);
-        const physicalTargetPt = IPAD_BOARD_PT * scaleRatio;
-        const targetPx = Math.min(baseSize, physicalTargetPt);
+        // iPad Air 4: 橫向短邊 15.78cm = 820 CSS pt
+        // 當 scaleRatio = 1.0 時，每格 3.0cm 精確為 155.91 CSS pt，5格+4黑邊 = 820 pt
+        const basePt = 820;
+        const targetPx = Math.round(basePt * scaleRatio);
 
-        canvasWrapper.style.width = `${targetPx}px`;
-        canvasWrapper.style.height = `${targetPx}px`;
+        // 強制設定寬高，允許校準時微幅放大或縮小，不再被 Math.min(vw, vh) 鎖死
+        canvasWrapper.style.setProperty('width', `${targetPx}px`, 'important');
+        canvasWrapper.style.setProperty('height', `${targetPx}px`, 'important');
+        canvasWrapper.style.setProperty('max-width', `${targetPx}px`, 'important');
+        canvasWrapper.style.setProperty('min-width', `${targetPx}px`, 'important');
+
+        canvas.style.setProperty('width', `${targetPx}px`, 'important');
+        canvas.style.setProperty('height', `${targetPx}px`, 'important');
       } else {
-        canvasWrapper.style.width = '100%';
-        canvasWrapper.style.height = 'auto';
+        canvasWrapper.style.removeProperty('width');
+        canvasWrapper.style.removeProperty('height');
+        canvasWrapper.style.removeProperty('max-width');
+        canvasWrapper.style.removeProperty('min-width');
+
+        canvas.style.removeProperty('width');
+        canvas.style.removeProperty('height');
       }
 
       // 更新校準標尺寬度 (3cm 實體長度)
       const rulerBar = document.getElementById('rulerBar');
       if (rulerBar) {
-        const calibrated3cm = IPAD_3CM_PT * scaleRatio;
+        const calibrated3cm = Math.round(IPAD_3CM_PT * scaleRatio);
         rulerBar.style.width = `${calibrated3cm}px`;
+        const stepWidth = Math.round(calibrated3cm / 3);
+        const marks = rulerBar.querySelectorAll('.ruler-mark');
+        marks.forEach((m, idx) => {
+          if (idx < 3) m.style.width = `${stepWidth}px`;
+        });
       }
+
+      // 同步數值顯示
+      const cmText = (3.0 * scaleRatio).toFixed(2);
+      const percentText = Math.round(scaleRatio * 100);
+      if (valScale) valScale.textContent = `${percentText}% (${cmText}cm)`;
+      const hudScaleText = document.getElementById('hudScaleText');
+      if (hudScaleText) hudScaleText.textContent = `${percentText}% (${cmText}cm)`;
+      if (sliderScale && sliderScale.value != percentText) sliderScale.value = percentText;
     }
 
     const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -1283,8 +1317,26 @@
     const hudPlayIcon = document.getElementById('hudPlayIcon');
     const hudRerollBtn = document.getElementById('hudRerollBtn');
     const hudRulerBtn = document.getElementById('hudRulerBtn');
+    const hudScaleMinus = document.getElementById('hudScaleMinus');
+    const hudScalePlus = document.getElementById('hudScalePlus');
     const rulerOverlay = document.getElementById('rulerOverlay');
     const toggleRulerBtn = document.getElementById('toggleRulerBtn');
+
+    if (hudScaleMinus) {
+      hudScaleMinus.addEventListener('click', (e) => {
+        e.stopPropagation();
+        scaleRatio = Math.max(0.80, scaleRatio - 0.01);
+        applyCanvasScale();
+      });
+    }
+
+    if (hudScalePlus) {
+      hudScalePlus.addEventListener('click', (e) => {
+        e.stopPropagation();
+        scaleRatio = Math.min(1.20, scaleRatio + 0.01);
+        applyCanvasScale();
+      });
+    }
 
     function enterFullscreen() {
       isFullscreen = true;
