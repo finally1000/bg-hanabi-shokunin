@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>花火職人 5×5 呼吸燈動態與遊戲開局版圖系統 | Hanabi Shokunin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0d;
+      --bg-card: rgba(20, 20, 26, 0.78);
+      --bg-card-hover: rgba(28, 28, 38, 0.9);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(247, 232, 110, 0.45);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-yellow: #F7E86E;
+      --accent-blue: #A3DAF5;
+      --accent-red: #F57A7A;
+      --accent-black: #000000;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --font-main: 'Outfit', 'Noto Sans TC', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(163, 218, 245, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(245, 122, 122, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(247, 232, 110, 0.04) 0%, transparent 50%);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 40px;
+      overflow-x: hidden;
+    }
+
+    /* Top Nav Mode Switcher */
+    .top-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-tab {
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-tab:hover {
+      color: #fff;
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, rgba(247, 232, 110, 0.2), rgba(247, 232, 110, 0.08));
+      color: var(--accent-yellow);
+      border: 1px solid var(--border-active);
+      box-shadow: 0 4px 16px rgba(247, 232, 110, 0.15);
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      max-width: 860px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: var(--accent-yellow);
+      margin-bottom: 10px;
+      backdrop-filter: blur(10px);
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-yellow);
+      box-shadow: 0 0 8px var(--accent-yellow);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 40%, #d1d5db 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Main Container */
+    .app-container {
+      display: grid;
+      grid-template-columns: minmax(320px, 580px) 360px;
+      gap: 28px;
+      max-width: 1060px;
+      width: 100%;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+    }
+
+    /* Stage Panel */
+    .stage-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      background: #000000;
+      cursor: crosshair;
+    }
+
+    #matrixCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Fullscreen Floating HUD */
+    .fullscreen-hud {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 18, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      padding: 8px 18px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 100001;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      opacity: 1;
+    }
+
+    .fullscreen-hud.hidden {
+      opacity: 0;
+      transform: translate(-50%, -20px);
+      pointer-events: none;
+    }
+
+    /* Fullscreen Overlay Mode */
+    .stage-card.fullscreen-mode {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: #000000 !important;
+      z-index: 99999 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .stage-card.fullscreen-mode .timeline-box,
+    .stage-card.fullscreen-mode .stage-actions {
+      display: none !important;
+    }
+
+    .stage-card.fullscreen-mode .canvas-wrapper {
+      max-width: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      width: auto !important;
+      height: auto !important;
+    }
+
+    /* Reference Ruler Widget */
+    .ruler-overlay {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 15, 20, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 100002;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+    }
+
+    .ruler-bar {
+      display: flex;
+      align-items: flex-end;
+      border-bottom: 2px solid var(--accent-yellow);
+      position: relative;
+    }
+
+    .ruler-mark {
+      height: 12px;
+      border-left: 1px solid #fff;
+      font-size: 0.65rem;
+      color: var(--accent-yellow);
+      padding-left: 2px;
+    }
+
+    /* Timeline & Progress */
+    .timeline-box {
+      width: 100%;
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .timeline-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .timeline-label {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .status-pill.fading {
+      background: rgba(247, 232, 110, 0.15);
+      color: var(--accent-yellow);
+      border: 1px solid rgba(247, 232, 110, 0.3);
+    }
+
+    .status-pill.holding {
+      background: rgba(163, 218, 245, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(163, 218, 245, 0.3);
+    }
+
+    .status-pill.game-static {
+      background: rgba(245, 122, 122, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(245, 122, 122, 0.3);
+    }
+
+    .time-digits {
+      font-family: monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-yellow));
+      border-radius: 999px;
+      transition: width 0.05s linear;
+    }
+
+    .cycle-ticks {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 2px;
+    }
+
+    .tick {
+      width: 3px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 1px;
+    }
+
+    .tick.active {
+      background: var(--accent-yellow);
+      box-shadow: 0 0 6px var(--accent-yellow);
+    }
+
+    .breath-indicator {
+      width: 100%;
+      display: flex;
+      gap: 4px;
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .breath-phase-fade {
+      flex: 1;
+      height: 100%;
+      background: rgba(247, 232, 110, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .breath-phase-fade-inner {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-yellow);
+    }
+
+    .breath-phase-hold {
+      flex: 2;
+      height: 100%;
+      background: rgba(163, 218, 245, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .breath-phase-hold-inner {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-blue);
+    }
+
+    /* Fullscreen Launcher Button on Stage */
+    .stage-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    /* Side Control Panel */
+    .controls-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Sliders Group */
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .slider-val {
+      font-family: monospace;
+      color: var(--accent-yellow);
+      font-weight: 600;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      height: 6px;
+      border-radius: 999px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-yellow);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(247, 232, 110, 0.6);
+    }
+
+    /* Style Selector Tabs */
+    .style-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .style-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .style-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .style-btn.active {
+      background: rgba(247, 232, 110, 0.08);
+      border-color: var(--accent-yellow);
+      box-shadow: 0 0 16px rgba(247, 232, 110, 0.12);
+    }
+
+    .style-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .style-desc {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .style-tag {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .style-btn.active .style-tag {
+      background: var(--accent-yellow);
+      color: #000;
+      font-weight: 600;
+    }
+
+    /* Game Board Setup Panel */
+    .game-setup-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .center-color-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .center-color-choice {
+      flex: 1;
+      height: 38px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .center-color-choice.active {
+      border-color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+    }
+
+    .tile-stats {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+    }
+
+    /* Buttons & Transport */
+    .button-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f7e86e 0%, #e0ce3e 100%);
+      color: #000;
+      border: none;
+      box-shadow: 0 4px 14px rgba(247, 232, 110, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #fff085 0%, #ecd845 100%);
+      box-shadow: 0 6px 18px rgba(247, 232, 110, 0.45);
+    }
+
+    .btn-accent-blue {
+      background: linear-gradient(135deg, #a3daf5 0%, #7bc7ed 100%);
+      color: #000;
+      border: none;
+    }
+
+    /* Showcase Section */
+    .showcase-section {
+      width: 100%;
+      max-width: 1060px;
+      margin-top: 36px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .showcase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .showcase-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .showcase-tab {
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .showcase-tab:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .showcase-tab.active {
+      background: rgba(247, 232, 110, 0.15);
+      border-color: var(--accent-yellow);
+      color: var(--accent-yellow);
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .showcase-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .showcase-media {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 420px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    }
+
+    .showcase-media img,
+    .showcase-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .showcase-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .showcase-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Footer Specs */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .specs-list {
+      display: inline-flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 6px;
+    }
+
+    .spec-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Modes -->
+  <div class="top-nav">
+    <button id="navModeAnim" class="nav-tab active">
+      <span>✨ 呼吸燈動態模式</span>
+    </button>
+    <button id="navModeGame" class="nav-tab">
+      <span>🎲 遊戲開局版圖模式</span>
+    </button>
+  </div>
+
+  <header>
+    <div class="badge">
+      <div class="badge-dot"></div>
+      雙人立體博弈桌遊 · 花火職人 (Hanabi Shokunin)
+    </div>
+    <h1 id="appTitle">5×5 呼吸燈動態矩陣</h1>
+    <p id="appSubtitle" class="subtitle">
+      依據實體規格（方格 3cm、黑邊 0.2cm）向量繪製。支援 iPad Air 4 螢幕 1:1 實體對應、自訂呼吸時長與開局版圖洗牌。
+    </p>
+  </header>
+
+  <div class="app-container">
+
+    <!-- Left: Stage Card -->
+    <div class="stage-card" id="stageCard">
+
+      <!-- Fullscreen Floating HUD (Pill Bar) -->
+      <div class="fullscreen-hud" id="fullscreenHud">
+        <button id="hudExitBtn" class="btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 999px;">
+          <span>✕ 退出全螢幕</span>
+        </button>
+        <button id="hudPlayBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 999px;">
+          <span id="hudPlayIcon">⏸ 暫停</span>
+        </button>
+        <button id="hudRerollBtn" class="btn btn-accent-blue" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 999px; display: none;">
+          <span>🎲 重新洗牌</span>
+        </button>
+        <button id="hudRulerBtn" class="btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 999px;">
+          <span>📏 3cm 校準尺</span>
+        </button>
+      </div>
+
+      <!-- 3cm Calibration Ruler Overlay -->
+      <div class="ruler-overlay" id="rulerOverlay">
+        <div style="font-size: 0.72rem; color: #aaa; margin-bottom: 2px;">iPad Air 4 螢幕 1:1 實體對齊校準尺 (3.0 cm)</div>
+        <div class="ruler-bar" id="rulerBar" style="width: 156px;">
+          <div class="ruler-mark" style="width: 52px;">0cm</div>
+          <div class="ruler-mark" style="width: 52px;">1cm</div>
+          <div class="ruler-mark" style="width: 52px;">2cm</div>
+          <div class="ruler-mark" style="width: 0px;">3cm</div>
+        </div>
+      </div>
+
+      <!-- Canvas Wrapper -->
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="matrixCanvas" width="800" height="800"></canvas>
+      </div>
+
+      <!-- Timeline & Progress (Visible in Animation Mode) -->
+      <div class="timeline-box" id="timelineBox">
+        <div class="timeline-info">
+          <div class="timeline-label">
+            <span>週期進度</span>
+            <span id="cycleBadge" class="status-pill fading">漸變中 (1.0s)</span>
+          </div>
+          <div class="time-digits">
+            <span id="currentCycleTime">0.0</span>s / <span id="totalLoopTime">30.0</span>s (Cycle <span id="cycleIndex">1</span>/10)
+          </div>
+        </div>
+
+        <!-- 30s Loop Progress Bar -->
+        <div class="progress-bar-bg">
+          <div id="progressBar" class="progress-bar-fill"></div>
+        </div>
+
+        <div class="cycle-ticks" id="cycleTicks"></div>
+
+        <!-- Micro breath indicator -->
+        <div class="breath-indicator" id="breathIndicator" title="當前微循環進度">
+          <div class="breath-phase-fade" id="breathPhaseFade">
+            <div id="breathFadeInner" class="breath-phase-fade-inner"></div>
+          </div>
+          <div class="breath-phase-hold" id="breathPhaseHold">
+            <div id="breathHoldInner" class="breath-phase-hold-inner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage Actions -->
+      <div class="stage-actions">
+        <button id="fullscreenBtn" class="btn btn-primary" style="flex: 2;">
+          <span>⛶ iPad 1:1 全螢幕 (每格 3cm)</span>
+        </button>
+        <button id="toggleRulerBtn" class="btn" style="flex: 1;" title="顯示/隱藏實體 3cm 校準標尺">
+          <span>📏 校準尺</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right: Controls Card -->
+    <div class="controls-card">
+      
+      <!-- Panel 1: Animation Mode Controls -->
+      <div id="animControlsPanel">
+        
+        <!-- Timing Sliders -->
+        <div>
+          <div class="section-title">
+            <span>呼吸燈時長微調 (Timing)</span>
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>呼吸漸變時間 (Fade)</span>
+              <span id="valFade" class="slider-val">1.0 秒</span>
+            </div>
+            <input type="range" id="sliderFade" min="0.2" max="3.0" step="0.1" value="1.0">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>凝固定格時間 (Hold)</span>
+              <span id="valHold" class="slider-val">2.0 秒</span>
+            </div>
+            <input type="range" id="sliderHold" min="0.5" max="5.0" step="0.1" value="2.0">
+          </div>
+
+          <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 4px;">
+            <span>單週期時長：<strong id="valCycleTotal" style="color: #fff;">3.0</strong> 秒</span>
+            <span>30秒總循環：<strong id="valLoopCount" style="color: #fff;">10</strong> 次轉換</span>
+          </div>
+        </div>
+
+        <!-- Styles Selector -->
+        <div style="margin-top: 18px;">
+          <div class="section-title">
+            <span>動態演繹風格 (Styles)</span>
+          </div>
+          <div class="style-tabs">
+            <div class="style-btn active" data-style="A" id="styleA">
+              <div class="style-title">
+                <span>風格 A：全域隨機</span>
+                <span class="style-tag">Global</span>
+              </div>
+              <div class="style-desc">25 個格子每拍獨立自 4 色中隨機抽選。</div>
+            </div>
+
+            <div class="style-btn" data-style="B" id="styleB">
+              <div class="style-title">
+                <span>風格 B：局部流動</span>
+                <span class="style-tag">Partial Flow</span>
+              </div>
+              <div class="style-desc">每拍僅挑選 3～5 個格子換色，其餘維持原色。</div>
+            </div>
+
+            <div class="style-btn" data-style="C" id="styleC">
+              <div class="style-title">
+                <span>風格 C：配額平衡</span>
+                <span class="style-tag">Balanced</span>
+              </div>
+              <div class="style-desc">全盤固定 4 色配額（6-6-6-7 格），每拍打亂位置。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playback Controls -->
+        <div style="margin-top: 18px;">
+          <div class="section-title">
+            <span>播放控制 (Playback)</span>
+          </div>
+          <div class="button-row">
+            <button id="playPauseBtn" class="btn btn-primary">
+              <span id="playIcon">⏸</span> <span id="playText">暫停</span>
+            </button>
+            <button id="stepBtn" class="btn" title="切換至下一週期">
+              <span>⏭</span> 步進
+            </button>
+            <button id="reseedBtn" class="btn" title="重新產生隨機序列">
+              <span>🎲</span> 重洗
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel 2: Game Board Setup Mode Controls -->
+      <div id="gameControlsPanel" class="game-setup-panel">
+        
+        <div>
+          <div class="section-title">
+            <span>中央格指定顏色 (Center Tile)</span>
+          </div>
+          <div class="center-color-selector">
+            <button class="center-color-choice active" data-color="red" style="background: var(--accent-red); color: #000;">
+              紅 (指定)
+            </button>
+            <button class="center-color-choice" data-color="yellow" style="background: var(--accent-yellow); color: #000;">
+              黃色
+            </button>
+            <button class="center-color-choice" data-color="blue" style="background: var(--accent-blue); color: #000;">
+              藍色
+            </button>
+            <button class="center-color-choice" data-color="black" style="background: #111; color: #fff; border: 1px solid #444;">
+              黑色
+            </button>
+          </div>
+          <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 6px;">
+            規則：除中央指定色外，其餘 24 格各為 12 個黃色與 12 個藍色隨機打亂。
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">
+            <span>盤面色彩即時統計</span>
+          </div>
+          <div class="tile-stats">
+            <span>🟡 黃：<b id="statYellow">12</b></span>
+            <span>🔵 藍：<b id="statBlue">12</b></span>
+            <span>🔴 紅：<b id="statRed">1</b></span>
+            <span>⚫ 黑：<b id="statBlack">0</b></span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; text-align: center;">
+            💡 提示：您也可以直接在畫布上方格點擊，手動循環微調顏色。
+          </div>
+        </div>
+
+        <button id="rerollBoardBtn" class="btn btn-primary" style="padding: 12px; font-size: 0.95rem;">
+          <span>🎲 隨機重新洗牌 (12黃 + 12藍)</span>
+        </button>
+
+      </div>
+
+      <!-- Calibration Slider -->
+      <div>
+        <div class="section-title">
+          <span>iPad 實體 1:1 尺規微調 (Calibration)</span>
+        </div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>螢幕縮放比率</span>
+            <span id="valScale" class="slider-val">100% (精確 3cm)</span>
+          </div>
+          <input type="range" id="sliderScale" min="85" max="115" step="1" value="100">
+        </div>
+      </div>
+
+      <!-- Export Tools -->
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="section-title">
+          <span>資材導出 (Export)</span>
+        </div>
+        <button id="exportPngBtn" class="btn">
+          <span>🖼</span> 導出當前幀 PNG (800×800)
+        </button>
+        <button id="exportSvgBtn" class="btn">
+          <span>📐</span> 導出當前幀 SVG (向量無損)
+        </button>
+        <button id="recordWebmBtn" class="btn">
+          <span>🎥</span> 錄製 30 秒 WebM 影片
+        </button>
+        <div id="recordStatus" class="record-status" style="font-size: 0.78rem; text-align: center; color: var(--accent-yellow); display: none;">
+          正在錄製 30 秒動畫，請稍候... (<span id="recordSec">0</span>s)
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Showcase Gallery for Rendered 30s Deliverables -->
+  <div class="showcase-section">
+    <div class="showcase-header">
+      <div>
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff;">🎬 已渲染完成的 30 秒成果檔直接檢視</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">由 Python 引擎演算導出之 10fps 最佳化 GIF 與 30fps MP4 高畫質視訊</p>
+      </div>
+      <div class="showcase-tabs">
+        <button class="showcase-tab active" data-showcase="A">風格 A (全域隨機)</button>
+        <button class="showcase-tab" data-showcase="B">風格 B (局部流動)</button>
+        <button class="showcase-tab" data-showcase="C">風格 C (配額平衡)</button>
+      </div>
+    </div>
+
+    <div class="showcase-grid">
+      <!-- GIF Player -->
+      <div class="showcase-card">
+        <div class="showcase-meta">
+          <span style="font-weight: 600; color: var(--accent-yellow);">30 秒最佳化 GIF 動畫</span>
+          <span id="gifBadge" class="showcase-badge">800×800 · 10fps · 循環</span>
+        </div>
+        <div class="showcase-media">
+          <img id="showcaseGif" src="hanabi_matrix_30s_style_A.gif" alt="30s GIF 動畫">
+        </div>
+        <a id="gifDownloadLink" href="hanabi_matrix_30s_style_A.gif" download="hanabi_matrix_30s_style_A.gif" class="btn" style="width: 100%;">
+          <span>📥</span> 下載 GIF 檔案 (約 1MB)
+        </a>
+      </div>
+
+      <!-- MP4 Player -->
+      <div class="showcase-card">
+        <div class="showcase-meta">
+          <span style="font-weight: 600; color: var(--accent-blue);">30 秒超高清 MP4 視訊</span>
+          <span id="mp4Badge" class="showcase-badge">800×800 · 30fps · H.264</span>
+        </div>
+        <div class="showcase-media">
+          <video id="showcaseMp4" src="hanabi_matrix_30s_style_A.mp4" controls autoplay loop muted playsinline></video>
+        </div>
+        <a id="mp4DownloadLink" href="hanabi_matrix_30s_style_A.mp4" download="hanabi_matrix_30s_style_A.mp4" class="btn" style="width: 100%;">
+          <span>📥</span> 下載 MP4 視訊 (約 1.2MB)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="specs-list">
+      <div class="spec-item">📐 比例：3cm 方格 / 0.2cm 黑邊 (15:1)</div>
+      <div class="spec-item">📱 iPad Air 4：短邊 15.78cm 精確 1:1 實體對齊</div>
+      <div class="spec-item">⏱ 節奏：動態可調呼吸漸變 + 定格</div>
+    </div>
+  </footer>
+
+  <script>
+    // --- 色彩與幾何常數 ---
+    const GRID_SIZE = 5;
+    const COLORS = [
+      { name: 'yellow', hex: '#F7E86E', rgb: [247, 232, 110] },
+      { name: 'blue',   hex: '#A3DAF5', rgb: [163, 218, 245] },
+      { name: 'red',    hex: '#F57A7A', rgb: [245, 122, 122] },
+      { name: 'black',  hex: '#000000', rgb: [0, 0, 0] }
+    ];
+
+    const COLOR_INDICES = { yellow: 0, blue: 1, red: 2, black: 3 };
+
+    // 幾何單位 (3.0cm 方格、0.2cm 黑邊 -> 15:1)
+    const TILE_UNITS = 15;
+    const BORDER_UNITS = 1;
+    const TOTAL_UNITS = GRID_SIZE * TILE_UNITS + (GRID_SIZE + 1) * BORDER_UNITS; // 81
+    const RADIUS_UNITS = 2.7;
+
+    // --- 運作模式與時間參數 ---
+    let appMode = 'anim'; // 'anim' | 'game'
+    let currentStyle = 'A';
+    let isPlaying = true;
+    let fadeDuration = 1.0;
+    let holdDuration = 2.0;
+    let cycleDuration = fadeDuration + holdDuration; // 3.0s
+    let totalCycles = 10;
+    let totalDuration = totalCycles * cycleDuration; // 30.0s
+
+    let animationTime = 0.0;
+    let lastTimestamp = 0;
+    let sequenceData = [];
+
+    // iPad 實體尺規校準比率 (1.0 = 100%)
+    let scaleRatio = 1.0;
+    let isFullscreen = false;
+    let hudTimer = null;
+
+    // --- 遊戲開局版圖模式狀態 ---
+    let centerColorChoice = 'red';
+    let gameBoardGrid = new Array(25).fill(0);
+
+    function initGameBoard() {
+      const remaining = [
+        ...new Array(12).fill(COLOR_INDICES.yellow),
+        ...new Array(12).fill(COLOR_INDICES.blue)
+      ];
+      remaining.sort(() => Math.random() - 0.5);
+
+      let remIdx = 0;
+      for (let i = 0; i < 25; i++) {
+        if (i === 12) { // 中央格
+          gameBoardGrid[i] = COLOR_INDICES[centerColorChoice];
+        } else {
+          gameBoardGrid[i] = remaining[remIdx++];
+        }
+      }
+      updateGameStats();
+    }
+
+    function updateGameStats() {
+      const counts = [0, 0, 0, 0];
+      for (let i = 0; i < 25; i++) counts[gameBoardGrid[i]]++;
+      document.getElementById('statYellow').textContent = counts[0];
+      document.getElementById('statBlue').textContent = counts[1];
+      document.getElementById('statRed').textContent = counts[2];
+      document.getElementById('statBlack').textContent = counts[3];
+    }
+
+    initGameBoard();
+
+    // --- 動態序列產生器 ---
+    function getRandomColorIndex() {
+      return Math.floor(Math.random() * 4);
+    }
+
+    function generateSequence(style) {
+      const seq = [];
+      if (style === 'A') {
+        for (let c = 0; c < totalCycles; c++) {
+          const grid = [];
+          for (let i = 0; i < 25; i++) grid.push(getRandomColorIndex());
+          seq.push(grid);
+        }
+      } else if (style === 'B') {
+        const initial = [];
+        for (let i = 0; i < 25; i++) initial.push(getRandomColorIndex());
+        seq.push([...initial]);
+        for (let c = 1; c < totalCycles; c++) {
+          const nextGrid = [...seq[c - 1]];
+          const changeCount = Math.floor(Math.random() * 3) + 3;
+          const indices = Array.from({ length: 25 }, (_, i) => i).sort(() => Math.random() - 0.5);
+          for (let k = 0; k < changeCount; k++) {
+            const idx = indices[k];
+            let newColor = getRandomColorIndex();
+            while (newColor === nextGrid[idx]) newColor = getRandomColorIndex();
+            nextGrid[idx] = newColor;
+          }
+          seq.push(nextGrid);
+        }
+      } else if (style === 'C') {
+        for (let c = 0; c < totalCycles; c++) {
+          const quota = [0,0,0,0,0,0, 1,1,1,1,1,1, 2,2,2,2,2,2, 3,3,3,3,3,3];
+          quota.push(c % 4);
+          quota.sort(() => Math.random() - 0.5);
+          seq.push(quota);
+        }
+      }
+      seq.push([...seq[0]]); // 無縫循環回首幀
+      return seq;
+    }
+
+    sequenceData = generateSequence(currentStyle);
+
+    // --- Canvas 與繪圖引擎 ---
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const stageCard = document.getElementById('stageCard');
+
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function easeInOutCosine(t) {
+      return (1 - Math.cos(Math.PI * t)) / 2;
+    }
+
+    function getCurrentColors(timeInLoop) {
+      if (appMode === 'game') {
+        return {
+          colors: gameBoardGrid.map(idx => COLORS[idx].hex),
+          cycleIndex: 0,
+          cycleElapsed: 0,
+          isFading: false
+        };
+      }
+
+      cycleDuration = fadeDuration + holdDuration;
+      totalDuration = totalCycles * cycleDuration;
+
+      const cycleIndex = Math.floor(timeInLoop / cycleDuration) % totalCycles;
+      const cycleElapsed = timeInLoop % cycleDuration;
+
+      const fromGrid = sequenceData[cycleIndex];
+      const toGrid = sequenceData[cycleIndex + 1];
+
+      const currentColors = [];
+      const isFading = cycleElapsed < fadeDuration;
+
+      if (isFading) {
+        const t = cycleElapsed / fadeDuration;
+        const factor = easeInOutCosine(t);
+        for (let i = 0; i < 25; i++) {
+          const fromRgb = COLORS[fromGrid[i]].rgb;
+          const toRgb = COLORS[toGrid[i]].rgb;
+          const r = Math.round(fromRgb[0] + (toRgb[0] - fromRgb[0]) * factor);
+          const g = Math.round(fromRgb[1] + (toRgb[1] - fromRgb[1]) * factor);
+          const b = Math.round(fromRgb[2] + (toRgb[2] - fromRgb[2]) * factor);
+          currentColors.push(`rgb(${r}, ${g}, ${b})`);
+        }
+      } else {
+        for (let i = 0; i < 25; i++) {
+          currentColors.push(COLORS[toGrid[i]].hex);
+        }
+      }
+
+      return { colors: currentColors, cycleIndex, cycleElapsed, isFading };
+    }
+
+    function renderBoard(colorsArray) {
+      const width = canvas.width;
+      const height = canvas.height;
+      const scale = width / TOTAL_UNITS;
+
+      const borderPx = BORDER_UNITS * scale;
+      const tilePx = TILE_UNITS * scale;
+      const radiusPx = RADIUS_UNITS * scale;
+
+      // 純黑底板
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const idx = r * GRID_SIZE + c;
+          const x = borderPx + c * (tilePx + borderPx);
+          const y = borderPx + r * (tilePx + borderPx);
+          const color = colorsArray[idx];
+
+          drawRoundedRect(ctx, x, y, tilePx, tilePx, radiusPx);
+          ctx.fillStyle = color;
+          ctx.fill();
+
+          // 遊戲模式下標記中央格輪廓以利辨識
+          if (appMode === 'game' && idx === 12) {
+            ctx.lineWidth = Math.max(1, borderPx * 0.4);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // --- UI 狀態更新 ---
+    const progressBar = document.getElementById('progressBar');
+    const currentCycleTime = document.getElementById('currentCycleTime');
+    const totalLoopTimeEl = document.getElementById('totalLoopTime');
+    const cycleIndexEl = document.getElementById('cycleIndex');
+    const cycleBadge = document.getElementById('cycleBadge');
+    const breathFadeInner = document.getElementById('breathFadeInner');
+    const breathHoldInner = document.getElementById('breathHoldInner');
+    const breathPhaseFade = document.getElementById('breathPhaseFade');
+    const breathPhaseHold = document.getElementById('breathPhaseHold');
+    const cycleTicksContainer = document.getElementById('cycleTicks');
+
+    function buildTicks() {
+      cycleTicksContainer.innerHTML = '';
+      for (let i = 0; i < totalCycles; i++) {
+        const tick = document.createElement('div');
+        tick.className = 'tick';
+        tick.id = `tick-${i}`;
+        cycleTicksContainer.appendChild(tick);
+      }
+    }
+    buildTicks();
+
+    function updateUI(timeInLoop, state) {
+      if (appMode === 'game') {
+        cycleBadge.className = 'status-pill game-static';
+        cycleBadge.textContent = '開局靜態版圖';
+        progressBar.style.width = '100%';
+        currentCycleTime.textContent = '0.0';
+        totalLoopTimeEl.textContent = '靜態';
+        cycleIndexEl.textContent = '1';
+        breathFadeInner.style.width = '0%';
+        breathHoldInner.style.width = '100%';
+        return;
+      }
+
+      totalDuration = totalCycles * cycleDuration;
+      totalLoopTimeEl.textContent = totalDuration.toFixed(1);
+
+      const percent = (timeInLoop / totalDuration) * 100;
+      progressBar.style.width = `${percent.toFixed(2)}%`;
+      currentCycleTime.textContent = timeInLoop.toFixed(1);
+      cycleIndexEl.textContent = state.cycleIndex + 1;
+
+      for (let i = 0; i < totalCycles; i++) {
+        const tick = document.getElementById(`tick-${i}`);
+        if (tick) {
+          if (i === state.cycleIndex) tick.classList.add('active');
+          else tick.classList.remove('active');
+        }
+      }
+
+      // 動態更新呼吸比例條寬度
+      breathPhaseFade.style.flex = fadeDuration;
+      breathPhaseHold.style.flex = holdDuration;
+
+      if (state.isFading) {
+        cycleBadge.className = 'status-pill fading';
+        cycleBadge.textContent = `漸變呼吸中 (${state.cycleElapsed.toFixed(1)}s / ${fadeDuration.toFixed(1)}s)`;
+        const fadePercent = (state.cycleElapsed / fadeDuration) * 100;
+        breathFadeInner.style.width = `${fadePercent}%`;
+        breathHoldInner.style.width = '0%';
+      } else {
+        cycleBadge.className = 'status-pill holding';
+        cycleBadge.textContent = `定格觀察 (${(state.cycleElapsed - fadeDuration).toFixed(1)}s / ${holdDuration.toFixed(1)}s)`;
+        breathFadeInner.style.width = '100%';
+        const holdPercent = ((state.cycleElapsed - fadeDuration) / holdDuration) * 100;
+        breathHoldInner.style.width = `${holdPercent}%`;
+      }
+    }
+
+    // --- 動畫主迴圈 ---
+    function animate(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const deltaTime = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      if (isPlaying && appMode === 'anim') {
+        cycleDuration = fadeDuration + holdDuration;
+        totalDuration = totalCycles * cycleDuration;
+        animationTime = (animationTime + deltaTime) % totalDuration;
+      }
+
+      const state = getCurrentColors(animationTime);
+      renderBoard(state.colors);
+      updateUI(animationTime, state);
+
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // --- iPad Air 4 1:1 實體尺寸全螢幕引擎 ---
+    // iPad Air 4: 264 ppi, DPR=2.0 -> 1cm = 51.9685 CSS pt.
+    // 5 格 3cm (15cm) + 4 格 0.2cm (0.8cm) = 15.8cm = 821.1 pt.
+    // 貼合短邊 (820 pt)，單格 3.0cm 精確為 155.91 CSS pt.
+    const IPAD_3CM_PT = 155.91;
+    const IPAD_BOARD_PT = 820; // 5*155.91 + 4*10.39 = 821 pt
+
+    function applyCanvasScale() {
+      if (isFullscreen) {
+        const vh = window.innerHeight;
+        const vw = window.innerWidth;
+        // 以短邊 1:1 基準，乘上校準比率 scaleRatio
+        const baseSize = Math.min(vw, vh);
+        const physicalTargetPt = IPAD_BOARD_PT * scaleRatio;
+        const targetPx = Math.min(baseSize, physicalTargetPt);
+
+        canvasWrapper.style.width = `${targetPx}px`;
+        canvasWrapper.style.height = `${targetPx}px`;
+      } else {
+        canvasWrapper.style.width = '100%';
+        canvasWrapper.style.height = 'auto';
+      }
+
+      // 更新校準標尺寬度 (3cm 實體長度)
+      const rulerBar = document.getElementById('rulerBar');
+      if (rulerBar) {
+        const calibrated3cm = IPAD_3CM_PT * scaleRatio;
+        rulerBar.style.width = `${calibrated3cm}px`;
+      }
+    }
+
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenHud = document.getElementById('fullscreenHud');
+    const hudExitBtn = document.getElementById('hudExitBtn');
+    const hudPlayBtn = document.getElementById('hudPlayBtn');
+    const hudPlayIcon = document.getElementById('hudPlayIcon');
+    const hudRerollBtn = document.getElementById('hudRerollBtn');
+    const hudRulerBtn = document.getElementById('hudRulerBtn');
+    const rulerOverlay = document.getElementById('rulerOverlay');
+    const toggleRulerBtn = document.getElementById('toggleRulerBtn');
+
+    function enterFullscreen() {
+      isFullscreen = true;
+      stageCard.classList.add('fullscreen-mode');
+      fullscreenHud.style.display = 'flex';
+      resetHudTimer();
+
+      // 同時嘗試原生 requestFullscreen
+      if (stageCard.requestFullscreen) {
+        stageCard.requestFullscreen().catch(() => {});
+      } else if (stageCard.webkitRequestFullscreen) {
+        stageCard.webkitRequestFullscreen().catch(() => {});
+      }
+
+      applyCanvasScale();
+    }
+
+    function exitFullscreen() {
+      isFullscreen = false;
+      stageCard.classList.remove('fullscreen-mode');
+      fullscreenHud.style.display = 'none';
+      rulerOverlay.style.display = 'none';
+
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+        document.webkitExitFullscreen().catch(() => {});
+      }
+
+      applyCanvasScale();
+    }
+
+    fullscreenBtn.addEventListener('click', enterFullscreen);
+    hudExitBtn.addEventListener('click', exitFullscreen);
+
+    // 螢幕尺規開關
+    let rulerVisible = false;
+    function toggleRuler() {
+      rulerVisible = !rulerVisible;
+      rulerOverlay.style.display = rulerVisible ? 'flex' : 'none';
+      toggleRulerBtn.classList.toggle('btn-primary', rulerVisible);
+    }
+    toggleRulerBtn.addEventListener('click', toggleRuler);
+    hudRulerBtn.addEventListener('click', toggleRuler);
+
+    // 全螢幕 HUD 自動淡出 (閒置 3 秒)
+    function resetHudTimer() {
+      fullscreenHud.classList.remove('hidden');
+      clearTimeout(hudTimer);
+      hudTimer = setTimeout(() => {
+        if (isFullscreen) fullscreenHud.classList.add('hidden');
+      }, 3000);
+    }
+
+    stageCard.addEventListener('pointerdown', () => {
+      if (isFullscreen) resetHudTimer();
+    });
+    stageCard.addEventListener('pointermove', () => {
+      if (isFullscreen) resetHudTimer();
+    });
+
+    window.addEventListener('resize', applyCanvasScale);
+
+    // 尺規微調滑桿 (85% ~ 115%)
+    const sliderScale = document.getElementById('sliderScale');
+    const valScale = document.getElementById('valScale');
+
+    sliderScale.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      scaleRatio = val / 100.0;
+      valScale.textContent = `${val}% (${(3.0 * scaleRatio).toFixed(2)}cm)`;
+      applyCanvasScale();
+    });
+
+    // --- 呼吸時長微調滑桿 ---
+    const sliderFade = document.getElementById('sliderFade');
+    const sliderHold = document.getElementById('sliderHold');
+    const valFade = document.getElementById('valFade');
+    const valHold = document.getElementById('valHold');
+    const valCycleTotal = document.getElementById('valCycleTotal');
+    const valLoopCount = document.getElementById('valLoopCount');
+
+    function updateTimings() {
+      fadeDuration = parseFloat(sliderFade.value);
+      holdDuration = parseFloat(sliderHold.value);
+      cycleDuration = fadeDuration + holdDuration;
+      totalDuration = totalCycles * cycleDuration;
+
+      valFade.textContent = `${fadeDuration.toFixed(1)} 秒`;
+      valHold.textContent = `${holdDuration.toFixed(1)} 秒`;
+      valCycleTotal.textContent = cycleDuration.toFixed(1);
+      valLoopCount.textContent = totalCycles;
+    }
+
+    sliderFade.addEventListener('input', updateTimings);
+    sliderHold.addEventListener('input', updateTimings);
+
+    // --- 模式切換 (動畫 vs 開局版圖) ---
+    const navModeAnim = document.getElementById('navModeAnim');
+    const navModeGame = document.getElementById('navModeGame');
+    const animControlsPanel = document.getElementById('animControlsPanel');
+    const gameControlsPanel = document.getElementById('gameControlsPanel');
+    const appTitle = document.getElementById('appTitle');
+    const appSubtitle = document.getElementById('appSubtitle');
+
+    navModeAnim.addEventListener('click', () => {
+      appMode = 'anim';
+      navModeAnim.classList.add('active');
+      navModeGame.classList.remove('active');
+      animControlsPanel.style.display = 'block';
+      gameControlsPanel.style.display = 'none';
+      hudPlayBtn.style.display = 'inline-flex';
+      hudRerollBtn.style.display = 'none';
+      appTitle.textContent = '5×5 呼吸燈動態矩陣';
+      appSubtitle.textContent = '依據實體規格（方格 3cm、黑邊 0.2cm）向量繪製。支援 iPad Air 4 螢幕 1:1 實體對應與自訂呼吸時長。';
+    });
+
+    navModeGame.addEventListener('click', () => {
+      appMode = 'game';
+      navModeGame.classList.add('active');
+      navModeAnim.classList.remove('active');
+      animControlsPanel.style.display = 'none';
+      gameControlsPanel.style.display = 'flex';
+      hudPlayBtn.style.display = 'none';
+      hudRerollBtn.style.display = 'inline-flex';
+      appTitle.textContent = '5×5 遊戲開局版圖模式';
+      appSubtitle.textContent = '中央指定色，其餘 24 格精確 12 黃 ＋ 12 藍隨機開局。支援點擊手動換色與 1:1 實體對戰棋盤。';
+    });
+
+    // 遊戲開局中央色選擇
+    document.querySelectorAll('.center-color-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.center-color-choice').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        centerColorChoice = btn.getAttribute('data-color');
+        gameBoardGrid[12] = COLOR_INDICES[centerColorChoice];
+        updateGameStats();
+      });
+    });
+
+    // 重新洗牌
+    document.getElementById('rerollBoardBtn').addEventListener('click', initGameBoard);
+    hudRerollBtn.addEventListener('click', initGameBoard);
+
+    // 手動點擊方格換色 (在遊戲模式下方便微調)
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const scale = rect.width / TOTAL_UNITS;
+      const borderPx = BORDER_UNITS * scale;
+      const tilePx = TILE_UNITS * scale;
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const x0 = borderPx + c * (tilePx + borderPx);
+          const y0 = borderPx + r * (tilePx + borderPx);
+          if (clickX >= x0 && clickX <= x0 + tilePx && clickY >= y0 && clickY <= y0 + tilePx) {
+            const idx = r * GRID_SIZE + c;
+            if (appMode === 'game') {
+              gameBoardGrid[idx] = (gameBoardGrid[idx] + 1) % 4;
+              updateGameStats();
+            }
+            return;
+          }
+        }
+      }
+    });
+
+    // --- 風格切換 (動畫模式) ---
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStyle = btn.getAttribute('data-style');
+        sequenceData = generateSequence(currentStyle);
+      });
+    });
+
+    // 播放 / 暫停
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      playIcon.textContent = isPlaying ? '⏸' : '▶';
+      playText.textContent = isPlaying ? '暫停' : '播放';
+      hudPlayIcon.textContent = isPlaying ? '⏸ 暫停' : '▶ 播放';
+    }
+
+    playPauseBtn.addEventListener('click', togglePlay);
+    hudPlayBtn.addEventListener('click', togglePlay);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === 'Escape' && isFullscreen) {
+        exitFullscreen();
+      }
+    });
+
+    // 步進到下個週期
+    document.getElementById('stepBtn').addEventListener('click', () => {
+      isPlaying = false;
+      playIcon.textContent = '▶';
+      playText.textContent = '播放';
+      hudPlayIcon.textContent = '▶ 播放';
+      const curCycle = Math.floor(animationTime / cycleDuration);
+      animationTime = ((curCycle + 1) % totalCycles) * cycleDuration;
+    });
+
+    // 重洗序列
+    document.getElementById('reseedBtn').addEventListener('click', () => {
+      sequenceData = generateSequence(currentStyle);
+      animationTime = 0.0;
+    });
+
+    // 導出當前幀 PNG
+    document.getElementById('exportPngBtn').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = `hanabi_${appMode}_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // 導出向量 SVG
+    document.getElementById('exportSvgBtn').addEventListener('click', () => {
+      const state = getCurrentColors(animationTime);
+      const width = 800;
+      const height = 800;
+      const scale = width / TOTAL_UNITS;
+      const borderPx = BORDER_UNITS * scale;
+      const tilePx = TILE_UNITS * scale;
+      const radiusPx = RADIUS_UNITS * scale;
+
+      let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">\n`;
+      svgContent += `  <rect width="${width}" height="${height}" fill="#000000" />\n`;
+
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const idx = r * GRID_SIZE + c;
+          const x = (borderPx + c * (tilePx + borderPx)).toFixed(2);
+          const y = (borderPx + r * (tilePx + borderPx)).toFixed(2);
+          const color = state.colors[idx];
+          svgContent += `  <rect x="${x}" y="${y}" width="${tilePx.toFixed(2)}" height="${tilePx.toFixed(2)}" rx="${radiusPx.toFixed(2)}" ry="${radiusPx.toFixed(2)}" fill="${color}" />\n`;
+        }
+      }
+      svgContent += `</svg>`;
+
+      const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+      const link = document.createElement('a');
+      link.download = `hanabi_vector_${appMode}_${Date.now()}.svg`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    });
+
+    // 錄製 WebM
+    const recordBtn = document.getElementById('recordWebmBtn');
+    const recordStatus = document.getElementById('recordStatus');
+    const recordSec = document.getElementById('recordSec');
+
+    recordBtn.addEventListener('click', () => {
+      if (!window.MediaRecorder) {
+        alert('您的瀏覽器不支援 MediaRecorder 錄製功能');
+        return;
+      }
+
+      recordBtn.disabled = true;
+      recordStatus.style.display = 'block';
+      animationTime = 0.0;
+      isPlaying = true;
+
+      const stream = canvas.captureStream(60);
+      let options = { mimeType: 'video/webm;codecs=vp9' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm' };
+      }
+
+      const recorder = new MediaRecorder(stream, options);
+      const chunks = [];
+
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `hanabi_matrix_30s_style_${currentStyle}.webm`;
+        a.click();
+        recordStatus.style.display = 'none';
+        recordBtn.disabled = false;
+      };
+
+      recorder.start();
+
+      let elapsed = 0;
+      const timer = setInterval(() => {
+        elapsed += 1;
+        recordSec.textContent = elapsed;
+        if (elapsed >= totalDuration) {
+          clearInterval(timer);
+          recorder.stop();
+        }
+      }, 1000);
+    });
+
+    // --- 成果展示區 Tab 切換 ---
+    const showcaseTabs = document.querySelectorAll('.showcase-tab');
+    const showcaseGif = document.getElementById('showcaseGif');
+    const showcaseMp4 = document.getElementById('showcaseMp4');
+    const gifDownloadLink = document.getElementById('gifDownloadLink');
+    const mp4DownloadLink = document.getElementById('mp4DownloadLink');
+    const gifBadge = document.getElementById('gifBadge');
+    const mp4Badge = document.getElementById('mp4Badge');
+
+    const fileMeta = {
+      'A': { gif: 'hanabi_matrix_30s_style_A.gif', mp4: 'hanabi_matrix_30s_style_A.mp4', gifSize: '1.28 MB', mp4Size: '1.23 MB' },
+      'B': { gif: 'hanabi_matrix_30s_style_B.gif', mp4: 'hanabi_matrix_30s_style_B.mp4', gifSize: '0.76 MB', mp4Size: '0.45 MB' },
+      'C': { gif: 'hanabi_matrix_30s_style_C.gif', mp4: 'hanabi_matrix_30s_style_C.mp4', gifSize: '1.31 MB', mp4Size: '1.28 MB' }
+    };
+
+    showcaseTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        showcaseTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const st = tab.getAttribute('data-showcase');
+        const meta = fileMeta[st];
+        if (meta) {
+          showcaseGif.src = meta.gif;
+          gifDownloadLink.href = meta.gif;
+          gifDownloadLink.download = meta.gif;
+          gifDownloadLink.innerHTML = `<span>📥</span> 下載 GIF 檔案 (${meta.gifSize})`;
+          gifBadge.textContent = `800×800 · 10fps · ${meta.gifSize}`;
+
+          showcaseMp4.src = meta.mp4;
+          mp4DownloadLink.href = meta.mp4;
+          mp4DownloadLink.download = meta.mp4;
+          mp4DownloadLink.innerHTML = `<span>📥</span> 下載 MP4 視訊 (${meta.mp4Size})`;
+          mp4Badge.textContent = `800×800 · 30fps · ${meta.mp4Size}`;
+          showcaseMp4.load();
+          showcaseMp4.play().catch(() => {});
+        }
+      });
+    });
+  </script>
+</body>
+</html>
