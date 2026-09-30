@@ -1,12 +1,19 @@
 # 花火職人 (Hanabi Shokunin) · 5×5 呼吸燈動態與開局版圖系統
 
-雙人立體博弈桌遊《花火職人》專用之動態展示與開局棋盤系統。
+雙人立體博弈桌遊《花火職人》專用之極致輕量化動態展示與開局棋盤系統。
 
 🌐 **線上靜態網站**：[https://finally1000.github.io/bg-hanabi-shokunin/](https://finally1000.github.io/bg-hanabi-shokunin/)
 
 ---
 
-## 🌟 特色功能
+## ⚡ 極致輕量化設計
+
+* **0 外部依賴**：全站無沉重圖檔、無外部影片，純原生 HTML5 + Vanilla CSS + Canvas 60fps 向量即時演算。
+* **秒開體驗**：全站體積僅約 **25 KB**，在手機、平板與慢速網路下皆可在數十毫秒內瞬間加載完成。
+
+---
+
+## 🌟 核心功能
 
 1. **iPad Air 4 螢幕 1:1 實體對齊**：
    - 每格精確對應實體 $3.0\,\text{cm}$、黑邊 $0.2\,\text{cm}$。
@@ -29,8 +36,6 @@
 
 ## 📁 檔案結構
 
-- `index.html`：網頁端完整應用系統。
-- `hanabi_matrix_30s_style_*.gif`：30 秒無縫循環 GIF 成果檔。
-- `hanabi_matrix_30s_style_*.mp4`：30 秒 30fps 超高清 MP4 成果檔。
-- `hanabi_matrix_sample.svg`：無損向量 SVG 圖檔。
+- `index.html`：單檔即用之完整互動應用系統（約 25 KB）。
 - `.nojekyll`：GitHub Pages 靜態託管標記檔。
+- `.gitignore`：Git 忽略規則設定。
